@@ -1,0 +1,11 @@
+.fi-sidebar {
+    background: white;
+    border-right: 1px solid #e5e7eb;
+    box-shadow: 0 0 20px rgba(0,0,0,.04);
+}
+
+.dark .fi-sidebar {
+    background: #0f172a;
+    border-right: 1px solid #334155;
+    box-shadow: 0 0 20px rgba(0,0,0,.2);
+}

@@ -60,7 +60,7 @@
         FOOTER
     ========================== --}}
     <div class="text-center mt-6 text-xs text-gray-400">
-        © {{ date('Y') }} SPPG - Badan Gizi Nasional
+        © {{ date('Y') }} Sistem Monitoring Penerima Manfaat MBG. All rights reserved.
     </div>
 
     {{-- =========================

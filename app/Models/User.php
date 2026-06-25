@@ -6,16 +6,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     use HasApiTokens;
     use HasFactory;
     use Notifiable;
 
     protected $fillable = [
-        'sppg_id',
         'name',
+        'email',
         'phone',
         'password',
         'role',
@@ -31,13 +33,11 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    // OPTIONAL: relasi ke SPPG
     public function sppg()
     {
         return $this->belongsTo(Sppg::class);
     }
 
-    // helper role check (biar enak di backend)
     public function isSuperAdmin()
     {
         return $this->role === 'super_admin';
@@ -50,6 +50,15 @@ class User extends Authenticatable
 
     public function isBeneficiary()
     {
-        return $this->role === 'beneficiary';
+        return $this->role === 'user';
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->status === 'active'
+            && in_array($this->role, [
+                'admin',
+                'super_admin',
+            ]);
     }
 }

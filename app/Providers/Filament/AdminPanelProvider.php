@@ -22,14 +22,41 @@ use Filament\View\PanelsRenderHook;
 
 class AdminPanelProvider extends PanelProvider
 {
+    public function boot(): void
+    {
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::HEAD_END,
+            fn (): string => '
+            <style>
+                .fi-sidebar {
+                    border-right: 1px solid rgb(229 231 235);
+                    box-shadow:
+                        0 4px 6px -1px rgb(0 0 0 / 0.1),
+                        0 2px 4px -2px rgb(0 0 0 / 0.1),
+                        8px 0 24px -8px rgb(0 0 0 / 0.15);
+                }
+
+                .dark .fi-sidebar {
+                    border-right-color: rgb(55 65 81);
+                    box-shadow:
+                        0 4px 6px -1px rgb(0 0 0 / 0.3),
+                        0 2px 4px -2px rgb(0 0 0 / 0.3),
+                        8px 0 24px -8px rgb(0 0 0 / 0.4);
+                }
+            </style>
+        '
+        );
+    }
+
+
     public function panel(Panel $panel): Panel
     {
         return $panel
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
-            ->brandName('SPPG - Badan Gizi Nasional')
+           ->login(\App\Filament\Auth\Login::class)
+            ->brandName('SMPM MBG')
             ->colors([
                 'primary' => Color::Blue,
             ])
@@ -41,6 +68,7 @@ class AdminPanelProvider extends PanelProvider
                 'Overview',
                 'Data Master',
                 'Operasional',
+                'Konten',
                 'Feedback',
                 'Reporting',
                 'Sistem',
@@ -51,6 +79,8 @@ class AdminPanelProvider extends PanelProvider
 
             ->pages([
                 Pages\Dashboard::class,
+                \App\Filament\Pages\Profile::class,
+    \App\Filament\Pages\ChangePassword::class,
             ])
             ->sidebarCollapsibleOnDesktop()
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
