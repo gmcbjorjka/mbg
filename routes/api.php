@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\ArticleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -82,6 +84,37 @@ Route::middleware('auth:sanctum')->group(function () {
         'uploadPhoto'
     ]);
 
+
+
+
+
+
+
+});
+
+
+Route::prefix('education')->group(function () {
+
+
+    // kategori edukasi
+    Route::get('/categories', [
+        CategoryController::class,
+        'index'
+    ]);
+
+
+    // semua artikel published
+    Route::get('/articles', [
+        ArticleController::class,
+        'index'
+    ]);
+
+
+    // detail artikel
+    Route::get('/articles/{slug}', [
+        ArticleController::class,
+        'show'
+    ]);
 
 
 });

@@ -6,21 +6,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
+    protected $table = 'categories';
+
+
     protected $fillable = [
 
         'name',
-
         'slug',
-
         'description',
-
         'icon',
-
         'color',
-
         'is_active',
 
     ];
+
 
 
     protected $casts = [
@@ -34,7 +33,9 @@ class Category extends Model
     public function articles()
     {
         return $this->hasMany(
-            Article::class
+            Article::class,
+            'category_id'
         );
     }
+
 }
