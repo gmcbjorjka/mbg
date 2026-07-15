@@ -12,31 +12,59 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'login' => 'required', // email atau phone
+            'login' => 'required',
             'password' => 'required'
         ]);
 
-        // 🔥 detect email atau phone
-        $field = filter_var($request->login, FILTER_VALIDATE_EMAIL)
+
+        $field = filter_var(
+            $request->login,
+            FILTER_VALIDATE_EMAIL
+        )
             ? 'email'
             : 'phone';
 
-        $user = User::where($field, $request->login)->first();
+
+        $user = User::with('profile')
+    ->where(
+        $field,
+        $request->login
+    )
+    ->first();
+
 
         if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+
+            return response()->json([
+                'message' => 'Email/telepon atau password salah'
+            ], 401);
+
         }
+
+
+        // khusus aplikasi mobile
+        if ($user->role !== 'user') {
+
+            return response()->json([
+                'message' => 'Akun tidak tersedia untuk aplikasi mobile'
+            ], 403);
+
+        }
+
 
         if ($user->status !== 'active') {
-            return response()->json(['message' => 'Account not active'], 403);
+
+            return response()->json([
+                'message' => 'Akun belum aktif'
+            ], 403);
+
         }
 
-        // optional role restriction
-        if ($user->role === 'beneficiary' && $field === 'email') {
-            return response()->json(['message' => 'Access denied'], 403);
-        }
 
-        $token = $user->createToken('mbg-token')->plainTextToken;
+        $token = $user
+            ->createToken('mbg-mobile')
+            ->plainTextToken;
+
 
         return response()->json([
             'token' => $token,
@@ -47,6 +75,75 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         return response()->json($request->user());
+    }
+
+    public function register(Request $request)
+    {
+        $request->validate([
+
+            'name' => 'required|string|max:255',
+
+            'email' => 'nullable|email|unique:users,email',
+
+            'phone' => 'required|string|unique:users,phone',
+
+            'password' => 'required|min:8|confirmed',
+
+            'address' => 'required',
+
+            'beneficiary_type' => 'required',
+
+        ], [
+
+            'phone.unique' => 'Nomor HP sudah terdaftar',
+
+            'email.unique' => 'Email sudah terdaftar',
+
+        ]);
+
+
+
+        $user = User::create([
+
+            'name' => $request->name,
+
+            'email' => $request->email,
+
+            'phone' => $request->phone,
+
+            'password' => Hash::make(
+                $request->password
+            ),
+
+
+            'role' => 'user',
+
+            'status' => 'inactive',
+
+        ]);
+
+
+
+        $user->profile()->create([
+
+            'address' => $request->address,
+
+            'beneficiary_type' =>
+                $request->beneficiary_type,
+
+        ]);
+
+
+
+        return response()->json([
+
+            'message' =>
+            'Registrasi berhasil, menunggu aktivasi admin',
+
+            'user' =>
+            $user->load('profile')
+
+        ], 201);
     }
 
     public function logout(Request $request)

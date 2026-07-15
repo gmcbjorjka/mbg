@@ -8,6 +8,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use App\Models\Profile;
 
 class User extends Authenticatable implements FilamentUser
 {
@@ -60,5 +61,10 @@ class User extends Authenticatable implements FilamentUser
                 'admin',
                 'super_admin',
             ]);
+    }
+
+    public function profile()
+    {
+        return $this->hasOne(Profile::class);
     }
 }

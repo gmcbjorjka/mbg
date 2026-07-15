@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -10,17 +10,78 @@ use App\Http\Controllers\Api\AuthController;
 |--------------------------------------------------------------------------
 */
 
+
 // =========================
 // AUTH ROUTES
 // =========================
+
 Route::prefix('auth')->group(function () {
 
-    // LOGIN (public)
-    Route::post('/login', [AuthController::class, 'login']);
+
+    // PUBLIC
+
+    Route::post('/login', [
+        AuthController::class,
+        'login'
+    ]);
+
+
+    Route::post('/register', [
+        AuthController::class,
+        'register'
+    ]);
+
+
 
     // PROTECTED AUTH
+
     Route::middleware('auth:sanctum')->group(function () {
-        Route::get('/me', [AuthController::class, 'me']);
-        Route::post('/logout', [AuthController::class, 'logout']);
+
+
+        Route::get('/me', [
+            AuthController::class,
+            'me'
+        ]);
+
+
+        Route::post('/logout', [
+            AuthController::class,
+            'logout'
+        ]);
+
+
     });
+
+
+});
+
+
+
+
+
+// =========================
+// PROFILE ROUTES
+// =========================
+
+Route::middleware('auth:sanctum')->group(function () {
+
+
+    // UPDATE DATA PROFILE
+
+    Route::put('/profile', [
+        ProfileController::class,
+        'update'
+    ]);
+
+
+
+    // UPLOAD FOTO PROFILE
+
+    Route::post('/profile/photo', [
+        ProfileController::class,
+        'uploadPhoto'
+    ]);
+
+
+
 });
