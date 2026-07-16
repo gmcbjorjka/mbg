@@ -16,15 +16,15 @@ class UserStats extends BaseWidget
                 ->description('Semua pengguna sistem')
                 ->color('primary'),
 
-            Stat::make('Admin', User::where('role', 'super_admin')->count())
+            Stat::make('Super Admin', User::where('role', 'super_admin')->count())
                 ->description('Pengelola sistem')
                 ->color('danger'),
 
-            Stat::make('Kader Posyandu', User::where('role', 'admin')->count())
+            Stat::make('Admin', User::where('role', 'admin')->count())
                 ->description('Petugas lapangan')
                 ->color('success'),
 
-            Stat::make('Penerima Manfaat', User::where('role', 'beneficiary')->count())
+            Stat::make('Penerima Manfaat', User::where('role', 'user')->count())
                 ->description('Penerima MBG')
                 ->color('warning'),
         ];

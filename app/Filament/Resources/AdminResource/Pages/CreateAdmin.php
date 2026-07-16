@@ -1,25 +1,21 @@
 <?php
 
-namespace App\Filament\Resources\UserResource\Pages;
+namespace App\Filament\Resources\AdminResource\Pages;
 
-use App\Filament\Resources\UserResource;
+use App\Filament\Resources\AdminResource;
 use Filament\Resources\Pages\CreateRecord;
 
-class CreateUser extends CreateRecord
+class CreateAdmin extends CreateRecord
 {
-    protected static string $resource =
-        UserResource::class;
-
+    protected static string $resource = AdminResource::class;
 
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
 
-
-        // semua akun dari web adalah admin
+        // semua akun dari halaman ini menjadi admin
 
         $data['role'] = 'admin';
-
 
 
         // admin langsung aktif
@@ -27,10 +23,8 @@ class CreateUser extends CreateRecord
         $data['status'] = 'active';
 
 
-
         return $data;
 
     }
-
 
 }

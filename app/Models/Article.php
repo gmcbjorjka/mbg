@@ -24,8 +24,6 @@ class Article extends Model
 
         'content',
 
-        'category',
-
         'status',
 
         'is_featured',

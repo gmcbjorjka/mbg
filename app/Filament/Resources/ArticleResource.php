@@ -2,22 +2,24 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\ArticleResource\Pages;
 use App\Models\Article;
-use App\Models\Category;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\DateTimePicker;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\RichEditor;
+use Filament\Tables\Columns\TextColumn;
+use Illuminate\Support\Str;
 
 class ArticleResource extends Resource
 {
@@ -30,83 +32,109 @@ class ArticleResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-    TextInput::make('title')
-        ->label('Judul Artikel')
-        ->required()
-        ->live(onBlur: true)
-        ->afterStateUpdated(
-            fn ($state, callable $set) =>
-            $set('slug', \Str::slug($state))
-        ),
 
-    TextInput::make('slug')
-        ->label('Slug URL')
-        ->required()
-        ->unique(ignoreRecord: true),
+            Hidden::make('author_id')
+                ->default(fn () => auth()->id()),
 
-    Select::make('category_id')
-        ->label('Kategori')
-        ->options(Category::all()->pluck('name', 'id'))
-        ->searchable()
-        ->required(),
+            TextInput::make('title')
+                ->label('Judul Artikel')
+                ->required()
+                ->live(onBlur: true)
+                ->afterStateUpdated(fn ($state, callable $set) => $set('slug', Str::slug($state))),
 
-    FileUpload::make('thumbnail')
-        ->label('Gambar Thumbnail')
-        ->image()
-        ->directory('articles'),
+            TextInput::make('slug')
+                ->label('Slug URL')
+                ->required()
+                ->unique(ignoreRecord: true),
 
-    Textarea::make('summary')
-        ->label('Ringkasan')
-        ->rows(3),
+            Select::make('category_id')
+                ->label('Kategori')
+                ->relationship('category', 'name')
+                ->searchable()
+                ->preload()
+                ->required(),
 
-    RichEditor::make('content')
-        ->label('Isi Artikel')
-        ->required()
-        ->columnSpanFull(),
+            FileUpload::make('thumbnail')
+                ->label('Thumbnail')
+                ->image()
+                ->directory('articles')
+                ->imageEditor(),
 
-    Toggle::make('is_featured')
-        ->label('Artikel Unggulan'),
+            Textarea::make('summary')
+                ->label('Ringkasan')
+                ->rows(3)
+                ->columnSpanFull(),
 
-    Select::make('status')
-        ->label('Status')
-        ->options([
-            'draft' => 'Draft',
-            'published' => 'Dipublikasikan',
-        ])
-        ->default('draft')
-        ->required(),
+            RichEditor::make('content')
+                ->label('Isi Artikel')
+                ->required()
+                ->columnSpanFull(),
 
-    DateTimePicker::make('published_at')
-        ->label('Tanggal Publikasi'),
+            Toggle::make('is_featured')
+                ->label('Artikel Unggulan')
+                ->default(false),
 
-    TextInput::make('reading_time')
-        ->label('Waktu Baca (menit)')
-        ->disabled()
-        ->numeric(),
-]);
+            Select::make('status')
+                ->label('Status')
+                ->options([
+                    'draft' => 'Draft',
+                    'published' => 'Dipublikasikan',
+                ])
+                ->default('draft')
+                ->required(),
+
+            DateTimePicker::make('published_at')
+                ->label('Tanggal Publikasi'),
+
+            TextInput::make('reading_time')
+                ->label('Waktu Baca (Menit)')
+                ->numeric()
+                ->default(1)
+                ->disabled(),
+        ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                ImageColumn::make('thumbnail'),
+                ImageColumn::make('thumbnail')
+                    ->label('Thumbnail'),
 
                 TextColumn::make('title')
+                    ->label('Judul')
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('category.name')
-                    ->label('Category'),
+                    ->label('Kategori')
+                    ->sortable(),
+
+                TextColumn::make('author.name')
+                    ->label('Penulis')
+                    ->sortable()
+                    ->searchable(),
 
                 TextColumn::make('status')
-                    ->badge(),
+                    ->badge()
+                    ->colors([
+                        'warning' => 'draft',
+                        'success' => 'published',
+                    ]),
 
                 TextColumn::make('views')
+                    ->label('Views')
                     ->sortable(),
 
                 TextColumn::make('published_at')
-                    ->dateTime(),
+                    ->label('Dipublikasikan')
+                    ->dateTime('d M Y H:i')
+                    ->sortable(),
+
+                TextColumn::make('created_at')
+                    ->label('Dibuat')
+                    ->dateTime('d M Y H:i')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -121,11 +149,10 @@ class ArticleResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Resources\ArticleResource\Pages\ListArticles::route('/'),
-            'create' => \App\Filament\Resources\ArticleResource\Pages\CreateArticle::route('/create'),
-            'edit' => \App\Filament\Resources\ArticleResource\Pages\EditArticle::route('/{record}/edit'),
-
-            'view' => \App\Filament\Resources\ArticleResource\Pages\ViewArticle::route('/{record}'),
+            'index' => Pages\ListArticles::route('/'),
+            'create' => Pages\CreateArticle::route('/create'),
+            'edit' => Pages\EditArticle::route('/{record}/edit'),
+            'view' => Pages\ViewArticle::route('/{record}'),
         ];
     }
 }

@@ -5,6 +5,8 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ArticleController;
+use App\Http\Controllers\Api\MbgMenuController;
+use App\Http\Controllers\Api\ScheduleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -118,3 +120,33 @@ Route::prefix('education')->group(function () {
 
 
 });
+
+
+Route::prefix('mbg')->group(function () {
+
+    Route::get(
+        '/menu',
+        [MbgMenuController::class,'index']
+    );
+
+
+    Route::get(
+        '/menu/today',
+        [MbgMenuController::class,'today']
+    );
+
+
+    Route::get(
+        '/menu/{id}',
+        [MbgMenuController::class,'show']
+    );
+
+});
+
+Route::get(
+    '/schedules',
+    [
+        ScheduleController::class,
+        'index'
+    ]
+);
