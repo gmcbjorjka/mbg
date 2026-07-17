@@ -3,40 +3,91 @@
 namespace App\Filament\Resources;
 
 use App\Models\MbgMenu;
+use Carbon\Carbon;
+
 use Filament\Forms;
 use Filament\Forms\Form;
+
 use Filament\Resources\Resource;
+
 use Filament\Tables;
 use Filament\Tables\Table;
+
 use App\Filament\Resources\MenuResource\Pages;
 use App\Filament\Resources\MenuResource\RelationManagers;
 
+
 class MenuResource extends Resource
 {
+
     protected static ?string $model = MbgMenu::class;
 
 
-    protected static ?string $navigationIcon = 'heroicon-o-cake';
+
+    protected static ?string $navigationIcon =
+        'heroicon-o-cake';
 
 
-    protected static ?string $navigationLabel = 'Menu MBG';
+
+    protected static ?string $navigationLabel =
+        'Menu MBG';
 
 
-    protected static ?string $navigationGroup = 'Data Master';
+
+    protected static ?string $navigationGroup =
+        'Operasional';
+
+
+
+    protected static ?int $navigationSort = 2;
+    protected static ?string $modelLabel = 'Menu MBG';
+
+protected static ?string $pluralModelLabel = 'Daftar Menu MBG';
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Menu dibuat otomatis dari Schedule MBG
+    |--------------------------------------------------------------------------
+    */
+
+public static function canCreate(): bool
+{
+    return false;
+}
+
+
+public static function canDelete($record): bool
+{
+    return false;
+}
+
+
+
 
 
 
     public static function form(Form $form): Form
     {
+
         return $form
+
             ->schema([
+
+
 
 
                 Forms\Components\DatePicker::make('date')
 
                     ->label('Tanggal Menu')
 
-                    ->required(),
+                    ->disabled()
+
+                    ->dehydrated(),
+
+
+
 
 
 
@@ -45,11 +96,11 @@ class MenuResource extends Resource
 
                     ->label('Judul Menu')
 
-                    ->default('Menu Hari Ini')
-
                     ->required()
 
                     ->maxLength(255),
+
+
 
 
 
@@ -66,19 +117,29 @@ class MenuResource extends Resource
                     ->nullable(),
 
 
+
+
+
+
+
                 Forms\Components\Textarea::make('description')
 
-                ->label('Keterangan Menu')
+                    ->label('Keterangan Menu')
 
-                ->placeholder(
-                    'Contoh: Menu sehat dengan kandungan gizi seimbang untuk ibu hamil dan balita'
-                )
+                    ->placeholder(
+                        'Contoh: Menu sehat dengan kandungan gizi seimbang'
+                    )
 
-                ->rows(4)
+                    ->rows(4)
 
-                ->nullable()
+                    ->nullable()
 
-                ->columnSpanFull(),
+                    ->columnSpanFull(),
+
+
+
+
+
 
 
                 Forms\Components\Toggle::make('is_active')
@@ -93,8 +154,14 @@ class MenuResource extends Resource
 
 
 
+
+
             ]);
+
     }
+
+
+
 
 
 
@@ -103,8 +170,12 @@ class MenuResource extends Resource
 
     public static function table(Table $table): Table
     {
+
         return $table
+
             ->columns([
+
+
 
 
 
@@ -113,6 +184,8 @@ class MenuResource extends Resource
                     ->label('Foto')
 
                     ->circular(),
+
+
 
 
 
@@ -130,6 +203,8 @@ class MenuResource extends Resource
 
 
 
+
+
                 Tables\Columns\TextColumn::make('date')
 
                     ->label('Tanggal')
@@ -137,6 +212,20 @@ class MenuResource extends Resource
                     ->date('d M Y')
 
                     ->sortable(),
+
+
+
+
+
+
+
+                Tables\Columns\TextColumn::make('schedule.title')
+
+                    ->label('Jadwal')
+
+                    ->limit(30),
+
+
 
 
 
@@ -152,6 +241,8 @@ class MenuResource extends Resource
 
 
 
+
+
                 Tables\Columns\TextColumn::make('items_count')
 
                     ->label('Item')
@@ -160,27 +251,44 @@ class MenuResource extends Resource
 
 
 
+
+
             ])
 
+
+
+
+
+
+
             ->actions([
+
+
 
                 Tables\Actions\EditAction::make(),
 
 
-                Tables\Actions\DeleteAction::make(),
 
             ])
 
+
+
+
+
+
+
             ->bulkActions([
 
-                Tables\Actions\BulkActionGroup::make([
 
-                    Tables\Actions\DeleteBulkAction::make(),
+                Tables\Actions\BulkActionGroup::make([]),
 
-                ]),
 
             ]);
+
     }
+
+
+
 
 
 
@@ -189,6 +297,7 @@ class MenuResource extends Resource
 
     public static function getRelations(): array
     {
+
         return [
 
 
@@ -202,7 +311,11 @@ class MenuResource extends Resource
 
 
         ];
+
     }
+
+
+
 
 
 
@@ -211,15 +324,19 @@ class MenuResource extends Resource
 
     public static function getPages(): array
     {
+
         return [
+
 
             'index' => Pages\ListMenus::route('/'),
 
-            'create' => Pages\CreateMenu::route('/create'),
 
             'edit' => Pages\EditMenu::route('/{record}/edit'),
 
+
         ];
+
     }
+
 
 }

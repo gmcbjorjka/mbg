@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use Illuminate\Validation\ValidationException;
 
 class Schedule extends Model
 {
@@ -37,12 +38,9 @@ class Schedule extends Model
 
     protected $casts = [
 
-
         'date' => 'date',
 
-
         'is_active' => 'boolean',
-
 
     ];
 
@@ -62,11 +60,43 @@ class Schedule extends Model
 
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Relationship
+    |--------------------------------------------------------------------------
+    */
+
+    // Satu schedule MBG memiliki satu menu MBG
+
+    public function menu()
+    {
+        return $this->hasOne(MbgMenu::class);
+    }
+
+
+
+public function distribution()
+{
+    return $this->hasOne(
+        Distribution::class
+    );
+}
+
+
+
+
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Accessor
+    |--------------------------------------------------------------------------
+    */
 
 
     public function getImageUrlAttribute()
     {
-
 
         if (!$this->image) {
 
@@ -80,9 +110,7 @@ class Schedule extends Model
             'storage/'.$this->image
         );
 
-
     }
-
 
 
 
@@ -110,10 +138,6 @@ class Schedule extends Model
 
 
     }
-
-
-
-
 
 
 }

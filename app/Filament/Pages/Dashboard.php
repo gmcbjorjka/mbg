@@ -20,7 +20,7 @@ class Dashboard extends BaseDashboard
     public function getFooterWidgets(): array
     {
         return [
-            ReviewChart::class,
+           
         ];
     }
 }

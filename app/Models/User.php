@@ -67,4 +67,12 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->hasOne(Profile::class);
     }
+
+    public function confirmations()
+{
+    return $this->hasMany(
+        Confirmation::class,
+        'user_id'
+    );
+}
 }

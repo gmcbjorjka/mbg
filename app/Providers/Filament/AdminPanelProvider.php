@@ -68,9 +68,9 @@ class AdminPanelProvider extends PanelProvider
                 'Overview',
                 'Data Master',
                 'Operasional',
-                'Konten',
                 'Feedback',
-                'Reporting',
+                'Konten',
+                'Laporan',
                 'Sistem',
             ])
 
@@ -86,7 +86,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
 \App\Filament\Widgets\UserStats::class,
-    \App\Filament\Widgets\ReviewChart::class,
+    \App\Filament\Widgets\MbgStatisticChart::class,
             ])
 
             ->middleware([

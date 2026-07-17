@@ -4,14 +4,24 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ScheduleResource\Pages;
 use App\Models\Schedule;
+use Carbon\Carbon;
+
 use Filament\Forms;
 use Filament\Forms\Form;
+
 use Filament\Resources\Resource;
+
 use Filament\Tables;
 use Filament\Tables\Table;
 
+use App\Models\MbgMenu;
+use App\Models\Distribution;
+use Filament\Notifications\Notification;
+
+
 class ScheduleResource extends Resource
 {
+
     protected static ?string $model = Schedule::class;
 
 
@@ -31,6 +41,14 @@ class ScheduleResource extends Resource
 
 
 
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $modelLabel = 'Jadwal';
+
+protected static ?string $pluralModelLabel = 'Daftar Jadwal';
+
+
+
 
 
     public static function form(Form $form): Form
@@ -39,6 +57,7 @@ class ScheduleResource extends Resource
         return $form
 
             ->schema([
+
 
 
 
@@ -62,11 +81,88 @@ class ScheduleResource extends Resource
 
 
 
+
+
                 Forms\Components\DatePicker::make('date')
 
                     ->label('Tanggal Kegiatan')
 
-                    ->required(),
+                    ->required()
+
+
+                    ->rules([
+
+
+                        function ($get, $record) {
+
+
+                            return function ($attribute, $value, $fail) use ($get, $record) {
+
+
+
+                                $query = Schedule::where('type', $get('type'))
+
+                                    ->whereDate(
+                                        'date',
+                                        $value
+                                    );
+
+
+
+
+                                if ($record) {
+
+
+                                    $query->where(
+                                        'id',
+                                        '!=',
+                                        $record->id
+                                    );
+
+
+                                }
+
+
+
+
+
+                                if ($query->exists()) {
+
+
+                                    $jenis = $get('type') === 'mbg'
+
+                                        ? 'MBG'
+
+                                        : 'Posyandu';
+
+
+
+
+                                    $fail(
+
+                                        "Jadwal {$jenis} tanggal "
+
+                                        . Carbon::parse($value)
+                                            ->format('d M Y')
+
+                                        . " sudah tersedia."
+
+                                    );
+
+
+                                }
+
+
+
+                            };
+
+
+                        },
+
+
+                    ]),
+
+
 
 
 
@@ -77,12 +173,13 @@ class ScheduleResource extends Resource
                     ->label('Judul Jadwal')
 
                     ->placeholder(
-                        'Contoh: Posyandu Bulan Juli'
+                        'Contoh: Pembagian MBG SD Negeri 01'
                     )
 
                     ->required()
 
                     ->maxLength(255),
+
 
 
 
@@ -102,6 +199,7 @@ class ScheduleResource extends Resource
 
 
 
+
                 Forms\Components\TimePicker::make('end_time')
 
                     ->label('Jam Selesai')
@@ -115,15 +213,18 @@ class ScheduleResource extends Resource
 
 
 
+
                 Forms\Components\TextInput::make('location')
 
                     ->label('Lokasi')
 
                     ->placeholder(
-                        'Contoh: Posyandu Melati'
+                        'Contoh: SD Negeri 01'
                     )
 
                     ->required(),
+
+
 
 
 
@@ -143,6 +244,8 @@ class ScheduleResource extends Resource
 
 
 
+
+
                 Forms\Components\FileUpload::make('image')
 
                     ->label('Foto Kegiatan')
@@ -154,6 +257,8 @@ class ScheduleResource extends Resource
                     ->imageEditor()
 
                     ->nullable(),
+
+
 
 
 
@@ -178,6 +283,7 @@ class ScheduleResource extends Resource
 
 
 
+
                 Forms\Components\Toggle::make('is_active')
 
                     ->label('Aktif')
@@ -187,6 +293,7 @@ class ScheduleResource extends Resource
                     ->onColor('success')
 
                     ->offColor('danger'),
+
 
 
 
@@ -226,6 +333,7 @@ class ScheduleResource extends Resource
 
 
 
+
                 Tables\Columns\BadgeColumn::make('type')
 
                     ->label('Jenis')
@@ -235,13 +343,9 @@ class ScheduleResource extends Resource
 
                         return $state === 'mbg'
 
-                            ?
+                            ? 'MBG'
 
-                            'MBG'
-
-                            :
-
-                            'Posyandu';
+                            : 'Posyandu';
 
 
                     })
@@ -250,15 +354,14 @@ class ScheduleResource extends Resource
                     ->colors([
 
 
-                        'warning' =>
-                            'mbg',
+                        'warning' => 'mbg',
 
 
-                        'success' =>
-                            'posyandu',
+                        'success' => 'posyandu',
 
 
                     ]),
+
 
 
 
@@ -277,6 +380,8 @@ class ScheduleResource extends Resource
 
 
 
+
+
                 Tables\Columns\TextColumn::make('title')
 
                     ->label('Judul')
@@ -284,6 +389,8 @@ class ScheduleResource extends Resource
                     ->searchable()
 
                     ->limit(30),
+
+
 
 
 
@@ -301,9 +408,13 @@ class ScheduleResource extends Resource
                             0,
                             5
                         )
+
                         .
+
                         ' - '
+
                         .
+
                         substr(
                             $record->end_time,
                             0,
@@ -312,6 +423,8 @@ class ScheduleResource extends Resource
 
 
                     }),
+
+
 
 
 
@@ -327,6 +440,8 @@ class ScheduleResource extends Resource
 
 
 
+
+
                 Tables\Columns\IconColumn::make('is_active')
 
                     ->label('Aktif')
@@ -335,12 +450,18 @@ class ScheduleResource extends Resource
 
 
 
+
             ])
 
 
 
 
+
+
+
             ->filters([
+
+
 
 
 
@@ -362,12 +483,17 @@ class ScheduleResource extends Resource
 
 
 
+
+
                 Tables\Filters\TernaryFilter::make('is_active')
 
                     ->label('Status Aktif'),
 
 
+
             ])
+
+
 
 
 
@@ -377,20 +503,78 @@ class ScheduleResource extends Resource
 
 
 
-                Tables\Actions\EditAction::make(),
+    Tables\Actions\Action::make('menu')
+
+        ->label('Menu')
+
+        ->icon('heroicon-o-cake')
+
+        ->color('warning')
+
+        ->visible(fn ($record) => $record->type === 'mbg')
+
+        ->url(function ($record) {
+
+            return route(
+                'filament.admin.resources.menus.edit',
+                [
+                    'record' => $record->menu?->id
+                ]
+            );
+
+        })
+
+        ->disabled(fn ($record) => !$record->menu),
 
 
-                Tables\Actions\DeleteAction::make(),
 
 
 
-            ])
+
+    Tables\Actions\Action::make('distribusi')
+
+        ->label('Distribusi')
+
+        ->icon('heroicon-o-truck')
+
+        ->color('success')
+
+        ->visible(fn ($record) => $record->type === 'mbg')
+
+        ->url(function ($record) {
+
+            return route(
+                'filament.admin.resources.distributions.edit',
+                [
+                    'record' => $record->distribution?->id
+                ]
+            );
+
+        })
+
+        ->disabled(fn ($record) => !$record->distribution),
+
+
+
+
+
+    Tables\Actions\EditAction::make(),
+
+
+
+    Tables\Actions\DeleteAction::make(),
+
+])
+
+
 
 
 
 
 
             ->bulkActions([
+
+
 
 
 
@@ -401,6 +585,7 @@ class ScheduleResource extends Resource
 
 
                 ]),
+
 
 
 

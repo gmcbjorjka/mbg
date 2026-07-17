@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Validation\ValidationException;
 
 class MbgMenu extends Model
 {
@@ -15,6 +16,8 @@ class MbgMenu extends Model
 
 
     protected $fillable = [
+
+        'schedule_id',
 
         'date',
 
@@ -40,6 +43,31 @@ class MbgMenu extends Model
 
 
 
+
+
+
+
+
+
+
+
+    /**
+     * Relasi ke jadwal MBG
+     *
+     * Satu menu berasal dari satu schedule
+     */
+    public function schedule()
+    {
+        return $this->belongsTo(
+            Schedule::class,
+            'schedule_id'
+        );
+    }
+
+
+
+
+
     /**
      * Daftar makanan
      */
@@ -51,6 +79,8 @@ class MbgMenu extends Model
         )
         ->orderBy('sort');
     }
+
+
 
 
 
@@ -68,6 +98,8 @@ class MbgMenu extends Model
 
 
 
+
+
     /**
      * Manfaat menu
      */
@@ -80,4 +112,12 @@ class MbgMenu extends Model
         ->orderBy('sort');
     }
 
+
+    public function distribution()
+{
+    return $this->hasOne(
+        Distribution::class,
+        'menu_id'
+    );
+}
 }

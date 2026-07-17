@@ -29,6 +29,10 @@ class ArticleResource extends Resource
     protected static ?string $navigationGroup = 'Konten';
     protected static ?string $navigationLabel = 'Artikel';
 
+    protected static ?string $modelLabel = 'Artikel';
+
+protected static ?string $pluralModelLabel = 'Daftar Artikel';
+
     public static function form(Form $form): Form
     {
         return $form->schema([

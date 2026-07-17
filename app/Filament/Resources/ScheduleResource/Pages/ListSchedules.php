@@ -12,8 +12,9 @@ class ListSchedules extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [
-            Actions\CreateAction::make(),
-        ];
+       return [
+        \Filament\Actions\CreateAction::make()
+            ->label('Tambah'),
+    ];
     }
 }
