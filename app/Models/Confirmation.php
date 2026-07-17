@@ -2,15 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Confirmation extends Model
 {
     use HasFactory;
-
-
 
     protected $fillable = [
 
@@ -38,8 +35,6 @@ class Confirmation extends Model
 
 
 
-
-
     protected $casts = [
 
         'received_at' => 'datetime',
@@ -52,40 +47,65 @@ class Confirmation extends Model
 
 
 
+    protected $appends = [
+
+        'photo_url',
+
+    ];
 
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Relationship
+    |--------------------------------------------------------------------------
+    */
 
     /**
-     * Relasi ke distribusi MBG
+     * Distribusi MBG
      */
     public function distribution()
     {
-
         return $this->belongsTo(
             Distribution::class,
             'distribution_id'
         );
-
     }
-
-
-
-
 
 
 
     /**
-     * Relasi ke penerima manfaat
+     * Penerima Manfaat
      */
     public function user()
     {
-
         return $this->belongsTo(
             User::class,
             'user_id'
         );
-
     }
 
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Accessor
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * URL Foto Bukti
+     */
+    public function getPhotoUrlAttribute()
+    {
+        if (!$this->photo) {
+
+            return null;
+
+        }
+
+        return asset(
+            'storage/' . $this->photo
+        );
+    }
 }

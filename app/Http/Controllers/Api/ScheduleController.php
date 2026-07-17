@@ -12,12 +12,10 @@ class ScheduleController extends Controller
     public function index(Request $request)
     {
 
-
         $query = Schedule::where(
             'is_active',
             true
         );
-
 
 
         // FILTER TYPE
@@ -35,15 +33,35 @@ class ScheduleController extends Controller
 
 
 
-
-        // FILTER BULAN
+        // FILTER BULAN FORMAT YYYY-MM
+        // contoh: 2026-07
 
         if ($request->month) {
 
-            $query->whereMonth(
-                'date',
+
+            $month = explode(
+                '-',
                 $request->month
             );
+
+
+            if (count($month) == 2) {
+
+
+                $query->whereYear(
+                    'date',
+                    $month[0]
+                );
+
+
+                $query->whereMonth(
+                    'date',
+                    $month[1]
+                );
+
+
+            }
+
 
         }
 
@@ -51,7 +69,8 @@ class ScheduleController extends Controller
 
 
 
-        // FILTER TAHUN
+        // FILTER TAHUN TERPISAH
+        // contoh year=2026
 
         if ($request->year) {
 
@@ -80,24 +99,15 @@ class ScheduleController extends Controller
 
 
 
-
         return response()->json([
-
 
             'success' => true,
 
-
             'data' => $data->map(function ($item) {
-
-
 
                 return $this->formatData($item);
 
-
-
             })
-
-
 
         ]);
 
@@ -114,7 +124,8 @@ class ScheduleController extends Controller
     {
 
 
-        $schedule = Schedule::find($id);
+        $schedule = Schedule::where('is_active', true)
+    ->find($id);
 
 
 
