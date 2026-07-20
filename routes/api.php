@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\MbgMenuController;
 use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\ConfirmationController;
 use App\Http\Controllers\Api\DistributionController;
+use App\Http\Controllers\Api\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -231,6 +232,12 @@ Route::middleware('auth:sanctum')->group(function () {
             DistributionController::class,
             'today'
         ]
+    );
+
+
+    Route::get(
+        '/dashboard',
+        [DashboardController::class, 'index']
     );
 
 
