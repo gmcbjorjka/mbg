@@ -9,6 +9,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\DatePicker;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -22,6 +23,7 @@ use Filament\Infolists\Components\ImageEntry;
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
+
 
 
     protected static ?string $navigationIcon =
@@ -39,9 +41,8 @@ class UserResource extends Resource
 
 
 
-    /**
-     * hanya user mobile
-     */
+
+
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
@@ -53,13 +54,17 @@ class UserResource extends Resource
 
 
 
-    /**
-     * user dibuat dari aplikasi mobile
-     */
+
+
+
     public static function canCreate(): bool
     {
         return false;
     }
+
+
+
+
 
 
 
@@ -71,9 +76,13 @@ class UserResource extends Resource
             ->schema([
 
 
+
+
+
                 Section::make('Informasi User')
 
                     ->schema([
+
 
 
                         Grid::make(2)
@@ -81,11 +90,15 @@ class UserResource extends Resource
                             ->schema([
 
 
+
+
                                 TextInput::make('name')
 
                                     ->label('Nama Lengkap')
 
                                     ->required(),
+
+
 
 
 
@@ -100,6 +113,7 @@ class UserResource extends Resource
 
 
 
+
                                 TextInput::make('phone')
 
                                     ->label('Nomor HP')
@@ -107,6 +121,7 @@ class UserResource extends Resource
                                     ->disabled()
 
                                     ->dehydrated(false),
+
 
 
 
@@ -126,10 +141,17 @@ class UserResource extends Resource
                                     ->required(),
 
 
+
                             ]),
 
 
+
                     ]),
+
+
+
+
+
 
 
 
@@ -143,11 +165,14 @@ class UserResource extends Resource
 
 
 
+
+
                         TextInput::make('nik')
 
                             ->label('NIK')
 
                             ->disabled(),
+
 
 
 
@@ -167,9 +192,14 @@ class UserResource extends Resource
 
 
 
-                        TextInput::make('birth_date')
 
-                            ->label('Tanggal Lahir'),
+
+                        DatePicker::make('birth_date')
+
+                            ->label('Tanggal Lahir')
+
+                            ->displayFormat('d-m-Y'),
+
 
 
 
@@ -185,7 +215,51 @@ class UserResource extends Resource
 
                                 'toddler_parent' => 'Orang Tua Balita',
 
-                            ]),
+                            ])
+
+                            ->live(),
+
+
+
+
+
+
+
+
+                        TextInput::make('child_name')
+
+                            ->label('Nama Anak')
+
+                            ->visible(
+                                fn ($get) =>
+
+                                $get('beneficiary_type') === 'toddler_parent'
+                            ),
+
+
+
+
+
+
+
+
+                        DatePicker::make('child_birth_date')
+
+                            ->label(
+                                fn ($get) =>
+
+                                $get('beneficiary_type') === 'pregnant'
+
+                                    ? 'Tanggal Awal Kehamilan (HPHT)'
+
+                                    : 'Tanggal Lahir Anak'
+                            )
+
+                            ->displayFormat('d-m-Y'),
+
+
+
+
 
 
 
@@ -198,13 +272,21 @@ class UserResource extends Resource
 
 
 
+
+
                     ])
 
                     ->columns(2),
 
 
+
+
+
             ]);
     }
+
+
+
 
 
 
@@ -222,11 +304,15 @@ class UserResource extends Resource
 
 
 
+
+
+
                 Tables\Columns\TextColumn::make('name')
 
                     ->label('Nama User')
 
                     ->searchable(),
+
 
 
 
@@ -245,15 +331,24 @@ class UserResource extends Resource
 
                     ->label('Jenis Penerima')
 
-                    ->formatStateUsing(fn ($state) => match($state) {
+                    ->formatStateUsing(fn ($state) => match ($state) {
 
-                        'pregnant' => 'Ibu Hamil',
 
-                        'toddler_parent' => 'Orang Tua Balita',
+                        'pregnant'
+                            => 'Ibu Hamil',
 
-                        default => '-',
+
+                        'toddler_parent'
+                            => 'Orang Tua Balita',
+
+
+                        default
+                        => '-',
+
 
                     }),
+
+
 
 
 
@@ -267,6 +362,7 @@ class UserResource extends Resource
 
 
 
+
                 Tables\Columns\TextColumn::make('created_at')
 
                     ->label('Tanggal Daftar')
@@ -274,11 +370,16 @@ class UserResource extends Resource
                     ->dateTime('d-m-Y'),
 
 
+
+
             ])
 
 
 
+
+
             ->filters([
+
 
 
 
@@ -293,7 +394,10 @@ class UserResource extends Resource
                     ]),
 
 
+
+
             ])
+
 
 
 
@@ -301,10 +405,13 @@ class UserResource extends Resource
             ->actions([
 
 
+
                 Tables\Actions\ViewAction::make(),
 
 
+
                 Tables\Actions\EditAction::make(),
+
 
 
             ]);
@@ -320,20 +427,26 @@ class UserResource extends Resource
 
 
 
+
     public static function getPages(): array
     {
         return [
 
+
             'index'
                 => Pages\ListUsers::route('/'),
+
 
 
             'edit'
                 => Pages\EditUser::route('/{record}/edit'),
 
 
+
             'view'
                 => Pages\ViewUser::route('/{record}'),
+
+
 
         ];
     }
@@ -342,11 +455,18 @@ class UserResource extends Resource
 
 
 
+
+
+
+
     public static function infolist(Infolist $infolist): Infolist
     {
+
         return $infolist
 
             ->schema([
+
+
 
 
 
@@ -355,15 +475,18 @@ class UserResource extends Resource
                     ->schema([
 
 
+
                         InfoGrid::make(2)
 
                             ->schema([
 
 
 
+
                                 TextEntry::make('name')
 
                                     ->label('Nama Lengkap'),
+
 
 
 
@@ -375,9 +498,11 @@ class UserResource extends Resource
 
 
 
+
                                 TextEntry::make('phone')
 
                                     ->label('Nomor HP'),
+
 
 
 
@@ -389,7 +514,11 @@ class UserResource extends Resource
                                     ->badge(),
 
 
+
+
+
                             ]),
+
 
 
                     ]),
@@ -399,9 +528,16 @@ class UserResource extends Resource
 
 
 
+
+
+
+
                 InfoSection::make('Profile User')
 
                     ->schema([
+
+
+
 
 
 
@@ -420,9 +556,12 @@ class UserResource extends Resource
 
 
 
+
+
                         InfoGrid::make(2)
 
                             ->schema([
+
 
 
 
@@ -439,22 +578,34 @@ class UserResource extends Resource
 
 
 
+
+
                                 TextEntry::make('profile.gender')
 
                                     ->label('Jenis Kelamin')
 
-                                    ->formatStateUsing(fn ($state) => match($state) {
+                                    ->formatStateUsing(fn ($state) => match ($state) {
+
+
 
                                         'male'
                                             => 'Laki-laki',
 
+
+
                                         'female'
                                             => 'Perempuan',
+
+
 
                                         default
                                         => '-',
 
+
+
                                     }),
+
+
 
 
 
@@ -474,22 +625,112 @@ class UserResource extends Resource
 
 
 
+
+
                                 TextEntry::make('profile.beneficiary_type')
 
                                     ->label('Jenis Penerima')
 
-                                    ->formatStateUsing(fn ($state) => match($state) {
+                                    ->formatStateUsing(fn ($state) => match ($state) {
+
+
 
                                         'pregnant'
                                             => 'Ibu Hamil',
 
+
+
                                         'toddler_parent'
                                             => 'Orang Tua Balita',
+
+
 
                                         default
                                         => '-',
 
+
+
                                     }),
+
+
+
+
+
+
+
+
+
+
+                                TextEntry::make('profile.child_name')
+
+                                    ->label('Nama Anak')
+
+                                    ->placeholder('-')
+
+                                    ->visible(
+                                        fn ($record) =>
+
+
+                                        $record->profile?->beneficiary_type === 'toddler_parent'
+                                    ),
+
+
+
+
+
+
+
+
+
+
+                                TextEntry::make('profile.child_birth_date')
+
+                                    ->label(
+                                        fn ($record) =>
+
+
+                                        $record->profile?->beneficiary_type === 'pregnant'
+
+
+                                            ? 'Tanggal Awal Kehamilan (HPHT)'
+
+
+                                            : 'Tanggal Lahir Anak'
+                                    )
+
+                                    ->date('d F Y')
+
+                                    ->placeholder('-'),
+
+
+
+
+
+
+
+
+
+
+                                TextEntry::make('profile.age_information')
+
+                                    ->label(
+                                        fn ($record) =>
+
+
+                                        $record->profile?->beneficiary_type === 'pregnant'
+
+
+                                            ? 'Usia Kandungan'
+
+
+                                            : 'Usia Anak'
+                                    )
+
+                                    ->placeholder('-'),
+
+
+
+
 
 
 
@@ -506,10 +747,18 @@ class UserResource extends Resource
 
 
 
+
+
                             ]),
 
 
+
+
                     ]),
+
+
+
+
 
 
 
@@ -524,9 +773,13 @@ class UserResource extends Resource
 
 
 
+
                         InfoGrid::make(2)
 
                             ->schema([
+
+
+
 
 
 
@@ -539,6 +792,8 @@ class UserResource extends Resource
 
 
 
+
+
                                 TextEntry::make('updated_at')
 
                                     ->label('Update Terakhir')
@@ -547,15 +802,25 @@ class UserResource extends Resource
 
 
 
+
                             ]),
+
+
+
 
 
                     ]),
 
 
 
+
+
+
             ]);
+
     }
+
+
 
 
 

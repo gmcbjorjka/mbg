@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\ConfirmationController;
 use App\Http\Controllers\Api\DistributionController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\ForgotPasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,18 +30,60 @@ use App\Http\Controllers\Api\DashboardController;
 */
 
 Route::prefix('auth')
-    ->middleware('throttle:5,1')
     ->group(function () {
+
 
         Route::post(
             '/login',
-            [AuthController::class, 'login']
-        );
+            [
+                AuthController::class,
+                'login'
+            ]
+        )
+        ->middleware('throttle:5,1');
+
+
 
         Route::post(
             '/register',
-            [AuthController::class, 'register']
+            [
+                AuthController::class,
+                'register'
+            ]
         );
+
+
+
+        Route::post(
+            '/forgot-password',
+            [
+                ForgotPasswordController::class,
+                'sendOtp'
+            ]
+        )
+        ->middleware('throttle:3,10');
+
+
+
+        Route::post(
+            '/verify-otp',
+            [
+                ForgotPasswordController::class,
+                'verifyOtp'
+            ]
+        )
+        ->middleware('throttle:5,1');
+
+
+
+        Route::post(
+            '/reset-password',
+            [
+                ForgotPasswordController::class,
+                'resetPassword'
+            ]
+        );
+
 
     });
 
@@ -72,6 +115,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post(
             '/logout',
             [AuthController::class, 'logout']
+        );
+
+        Route::post(
+            '/change-password',
+            [AuthController::class, 'changePassword']
         );
 
     });
@@ -203,24 +251,28 @@ Route::middleware('auth:sanctum')->group(function () {
             [ConfirmationController::class, 'index']
         );
 
+
+        // cek verifikasi terbaru
+        Route::get(
+            '/latest',
+            [
+                ConfirmationController::class,
+                'latest'
+            ]
+        );
+
+
         // detail verifikasi
         Route::get(
             '/{confirmation}',
             [ConfirmationController::class, 'show']
         );
 
+
         // kirim verifikasi
         Route::post(
             '/',
             [ConfirmationController::class, 'store']
-        );
-
-        Route::get(
-            '/latest',
-            [
-            ConfirmationController::class,
-            'latest'
-        ]
         );
 
     });

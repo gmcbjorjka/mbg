@@ -47,6 +47,11 @@ return new class () extends Migration {
             $table->string('photo')
                 ->nullable();
 
+            // Child information
+            $table->string('child_name')->nullable();
+
+            $table->date('child_birth_date')->nullable();
+
 
             $table->timestamps();
 

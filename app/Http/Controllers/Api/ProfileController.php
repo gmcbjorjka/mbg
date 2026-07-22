@@ -35,6 +35,9 @@ class ProfileController extends Controller
             'beneficiary_type' =>
                 'nullable|in:pregnant,toddler_parent',
 
+                 'child_name' => 'nullable|string|max:255',
+    'child_birth_date' => 'nullable|date',
+
         ]);
 
 
@@ -83,6 +86,10 @@ class ProfileController extends Controller
                 'beneficiary_type'
                 =>
                 $request->beneficiary_type,
+
+                 'child_name' => $request->child_name,
+
+    'child_birth_date' => $request->child_birth_date,
 
 
             ]);

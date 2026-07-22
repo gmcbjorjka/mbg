@@ -8,6 +8,46 @@ use Illuminate\Http\Request;
 
 class ConfirmationController extends Controller
 {
+    public function index(Request $request)
+    {
+        $query = Confirmation::with(
+            'distribution.schedule'
+        )
+        ->where(
+            'user_id',
+            auth()->id()
+        );
+
+
+        if ($request->filled('month') && $request->filled('year')) {
+
+            $query->whereMonth(
+                'received_at',
+                $request->month
+            )
+            ->whereYear(
+                'received_at',
+                $request->year
+            );
+
+        }
+
+
+        $confirmations = $query
+            ->latest()
+            ->get();
+
+
+        return response()->json([
+
+            'success' => true,
+
+            'data' => $confirmations
+
+        ]);
+    }
+
+
     public function store(Request $request)
     {
         $request->validate([
@@ -99,6 +139,38 @@ class ConfirmationController extends Controller
 
         ]);
 
+    }
+
+    public function show($id)
+    {
+        $confirmation = Confirmation::with(
+            'distribution.schedule'
+        )
+        ->where('id', $id)
+        ->where('user_id', auth()->id())
+        ->first();
+
+
+        if (!$confirmation) {
+
+            return response()->json([
+
+                'success' => false,
+
+                'message' => 'Data verifikasi tidak ditemukan.'
+
+            ], 404);
+
+        }
+
+
+        return response()->json([
+
+            'success' => true,
+
+            'data' => $confirmation
+
+        ]);
     }
 
 }

@@ -89,7 +89,7 @@ class ScheduleController extends Controller
 
             ->orderBy(
                 'date',
-                'asc'
+                'desc'
             )
 
             ->get();

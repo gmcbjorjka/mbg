@@ -146,6 +146,67 @@ class AuthController extends Controller
         ], 201);
     }
 
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+
+            'current_password' => [
+                'required',
+            ],
+
+            'password' => [
+                'required',
+                'min:8',
+                'confirmed',
+            ],
+
+        ]);
+
+
+        $user = auth()->user();
+
+
+        if (!Hash::check(
+            $request->current_password,
+            $user->password
+        )) {
+
+            return response()->json([
+
+                'success' => false,
+
+                'message' => 'Password lama salah.'
+
+            ], 422);
+
+        }
+
+
+        $user->update([
+
+            'password' => Hash::make(
+                $request->password
+            ),
+
+        ]);
+
+
+        // logout semua perangkat
+
+        $user->tokens()->delete();
+
+
+
+        return response()->json([
+
+            'success' => true,
+
+            'message' => 'Password berhasil diubah.'
+
+        ]);
+    }
+
+
     public function logout(Request $request)
     {
         $request->user()->tokens()->delete();

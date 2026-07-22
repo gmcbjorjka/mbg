@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Schedule;
 use App\Models\MbgMenu;
 use App\Models\Distribution;
+use App\Models\Article;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -15,7 +17,9 @@ class DashboardController extends Controller
      */
     public function index(Request $request)
     {
+
         $user = $request->user();
+
 
 
         /*
@@ -27,9 +31,12 @@ class DashboardController extends Controller
         $profile = $user->profile;
 
 
+
+
+
         /*
         |--------------------------------------------------------------------------
-        | STATISTIK
+        | STATISTIK PENERIMAAN
         |--------------------------------------------------------------------------
         */
 
@@ -40,11 +47,119 @@ class DashboardController extends Controller
 
 
 
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | JUMLAH EDUKASI ARTIKEL
+        |--------------------------------------------------------------------------
+        */
+
+        $educationCount = Article::where('status', 'published')
+            ->count();
+
+
+
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | HITUNG USIA ANAK / KEHAMILAN
+        |--------------------------------------------------------------------------
+        */
+
+        $childAge = null;
+
+        $pregnancyAge = null;
+
+
+
+        if ($profile) {
+
+
+
+            // BALITA
+
+            if (
+                $profile->beneficiary_type === 'toddler_parent'
+                &&
+                $profile->child_birth_date
+            ) {
+
+
+                $childAge =
+                    Carbon::parse(
+                        $profile->child_birth_date
+                    )
+                    ->age;
+
+
+            }
+
+
+
+
+
+
+            // IBU HAMIL
+
+            if (
+                $profile->beneficiary_type === 'pregnant'
+                &&
+                $profile->child_birth_date
+            ) {
+
+
+                $weeks =
+
+                    Carbon::parse(
+                        $profile->child_birth_date
+                    )
+                    ->diffInWeeks(
+                        now()
+                    );
+
+
+
+                $pregnancyAge = [
+
+
+                    'weeks'
+                        => $weeks,
+
+
+                    'months'
+                        => floor($weeks / 4.3),
+
+
+                ];
+
+
+            }
+
+
+
+        }
+
+
+
+
+
+
+
+
+
         /*
         |--------------------------------------------------------------------------
         | RIWAYAT PENERIMAAN TERAKHIR
         |--------------------------------------------------------------------------
         */
+
 
         $latestConfirmations = $user
             ->confirmations()
@@ -54,23 +169,44 @@ class DashboardController extends Controller
             ->get()
             ->map(function ($item) {
 
-                return [
-                    'id' => $item->id,
 
-                    'date' => $item->received_at
+                return [
+
+
+                    'id'
+                        => $item->id,
+
+
+                    'date'
+                        => $item->received_at
                         ? $item->received_at
                             ->format('d M Y')
                         : null,
 
-                    'status' => $item->status,
 
-                    'rating' => $item->rating,
+                    'status'
+                        => $item->status,
 
-                    'photo' => $item->photo_url,
+
+                    'rating'
+                        => $item->rating,
+
+
+                    'photo'
+                        => $item->photo_url,
+
+
 
                 ];
 
+
             });
+
+
+
+
+
+
 
 
 
@@ -80,19 +216,34 @@ class DashboardController extends Controller
         |--------------------------------------------------------------------------
         */
 
+
         $nextSchedule = Schedule::where('is_active', true)
+
             ->whereDate(
                 'date',
                 '>=',
                 now()
             )
+
             ->with([
+
                 'menu',
+
                 'distribution'
+
             ])
+
             ->orderBy('date')
+
             ->orderBy('start_time')
+
             ->first();
+
+
+
+
+
+
 
 
 
@@ -102,17 +253,32 @@ class DashboardController extends Controller
         |--------------------------------------------------------------------------
         */
 
+
         $todayMenu = MbgMenu::whereDate(
             'date',
             today()
         )
+
             ->where('is_active', true)
+
             ->with([
+
                 'items',
+
                 'nutritions',
+
                 'benefits'
+
             ])
+
             ->first();
+
+
+
+
+
+
+
 
 
 
@@ -122,21 +288,35 @@ class DashboardController extends Controller
         |--------------------------------------------------------------------------
         */
 
+
         $todayDistribution = Distribution::whereHas(
             'schedule',
             function ($query) {
+
 
                 $query->whereDate(
                     'date',
                     today()
                 );
 
+
             }
         )
-            ->with([
-                'menu'
-            ])
-            ->first();
+
+        ->with([
+
+            'menu'
+
+        ])
+
+        ->first();
+
+
+
+
+
+
+
 
 
 
@@ -146,42 +326,97 @@ class DashboardController extends Controller
         |--------------------------------------------------------------------------
         */
 
+
         return response()->json([
+
 
             'success' => true,
 
+
             'message' => 'Dashboard berhasil diambil',
+
+
 
             'data' => [
 
+
+
+
+
                 'profile' => [
 
-                    'name' => $user->name,
 
-                    'email' => $user->email,
 
-                    'type' => $profile->type ?? null,
+                    'name'
+                        => $user->name,
 
-                    'photo' => $profile->photo_url ?? null,
+
+
+                    'email'
+                        => $user->email,
+
+
+
+                    'beneficiary_type'
+                        => $profile->beneficiary_type ?? null,
+
+
+
+                    'child_name'
+                        => $profile->child_name ?? null,
+
+
+
+                    'child_birth_date'
+                        => $profile->child_birth_date ?? null,
+
+
+
+                    'photo'
+                        => $profile->photo_url ?? null,
+
+
 
                 ],
+
+
+
+
+
 
 
 
                 'statistics' => [
 
+
+
                     'confirmation_count'
                         => $confirmationCount,
 
 
+
                     'child_age'
-                        => $profile->child_age ?? null,
+                        => $childAge,
+
+
+
+                    'pregnancy_age'
+                        => $pregnancyAge,
+
 
 
                     'education_count'
-                        => 0,
+                        => $educationCount,
+
+
 
                 ],
+
+
+
+
+
+
 
 
 
@@ -190,91 +425,169 @@ class DashboardController extends Controller
 
 
 
-                'next_schedule' => $nextSchedule
+
+
+
+
+
+
+                'next_schedule'
+
+                    => $nextSchedule
+
                     ? [
 
-                        'id' => $nextSchedule->id,
+
+
+                        'id'
+                            => $nextSchedule->id,
+
+
 
                         'title'
                             => $nextSchedule->title,
+
+
 
                         'date'
                             => $nextSchedule->date
                                 ->format('d M Y'),
 
+
+
                         'start_time'
                             => $nextSchedule->start_time,
+
+
 
                         'end_time'
                             => $nextSchedule->end_time,
 
+
+
                         'location'
                             => $nextSchedule->location,
 
+
+
                         'address'
                             => $nextSchedule->address,
+
+
 
                         'image'
                             => $nextSchedule->image_url,
 
 
+
                     ]
+
                     : null,
 
 
 
-                'today_menu' => $todayMenu
+
+
+
+
+
+
+                'today_menu'
+
+
+                    => $todayMenu
+
+
                     ? [
+
 
                         'id'
                             => $todayMenu->id,
 
+
                         'title'
                             => $todayMenu->title,
 
+
                         'description'
                             => $todayMenu->description,
+
 
                         'image'
                             => $todayMenu->image,
 
 
+
                         'items'
                             => $todayMenu->items,
+
+
 
                         'nutrition'
                             => $todayMenu->nutritions,
 
+
+
                         'benefits'
                             => $todayMenu->benefits,
 
+
+
                     ]
+
                     : null,
+
+
+
+
+
+
 
 
 
                 'today_distribution'
+
+
                     => $todayDistribution
+
+
                     ? [
+
+
 
                         'status'
                             => $todayDistribution->status,
 
+
+
                         'jumlah_dikirim'
-                            => $todayDistribution
-                                ->jumlah_dikirim,
+                            => $todayDistribution->jumlah_dikirim,
+
+
 
                         'keterangan'
-                            => $todayDistribution
-                                ->keterangan,
+                            => $todayDistribution->keterangan,
+
+
 
                     ]
+
+
                     : null,
+
+
+
 
 
             ]
 
+
+
         ]);
 
+
+
     }
+
+
 }
