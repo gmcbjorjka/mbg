@@ -6,108 +6,270 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
+
 class ProfileController extends Controller
 {
+
+
     public function update(Request $request)
     {
+
 
         $user = auth()->user();
 
 
+
         $request->validate([
 
-            'name' => 'required|string|max:255',
 
-            'phone' => 'nullable|string|max:20',
+            /*
+            |--------------------------------------------------------------------------
+            | USER
+            |--------------------------------------------------------------------------
+            */
 
-            'email' => 'required|email',
+
+            'name' =>
+
+                'required|string|max:255',
 
 
-            'address' => 'nullable|string',
 
-            'nik' => 'nullable|string|max:20',
+            'phone' =>
 
-            'birth_date' => 'nullable|date',
+                'nullable|string|max:20',
+
+
+
+            'email' =>
+
+                'required|email',
+
+
+
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | PROFILE IBU
+            |--------------------------------------------------------------------------
+            */
+
+
+            'address' =>
+
+                'nullable|string',
+
+
+
+            'nik' =>
+
+                'nullable|string|max:20',
+
+
+
+            'birth_date' =>
+
+                'nullable|date',
+
+
 
             'gender' =>
+
                 'nullable|in:male,female',
 
+
+
             'beneficiary_type' =>
+
                 'nullable|in:pregnant,toddler_parent',
 
-                 'child_name' => 'nullable|string|max:255',
-    'child_birth_date' => 'nullable|date',
+
+
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | DATA ANAK
+            |--------------------------------------------------------------------------
+            */
+
+
+            'child_name' =>
+
+                'nullable|string|max:255',
+
+
+
+            'child_nik' =>
+
+                'nullable|string|max:20',
+
+
+
+            'child_gender' =>
+
+                'nullable|in:male,female',
+
+
+
+            'child_birth_date' =>
+
+                'nullable|date',
+
+
 
         ]);
 
+
+
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | UPDATE USER
+        |--------------------------------------------------------------------------
+        */
 
 
         $user->update([
 
+
             'name' =>
-            $request->name,
+
+                $request->name,
+
+
 
             'phone' =>
-            $request->phone,
+
+                $request->phone,
+
+
 
             'email' =>
-            $request->email,
+
+                $request->email,
+
+
 
         ]);
 
 
 
-        if ($user->profile) {
+
+
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | UPDATE PROFILE
+        |--------------------------------------------------------------------------
+        */
+
+
+        if($user->profile){
 
 
             $user->profile->update([
 
 
-                'address'
-                =>
-                $request->address,
+
+                'address' =>
+
+                    $request->address,
 
 
-                'nik'
-                =>
-                $request->nik,
+
+                'nik' =>
+
+                    $request->nik,
 
 
-                'birth_date'
-                =>
-                $request->birth_date,
+
+                'birth_date' =>
+
+                    $request->birth_date,
 
 
-                'gender'
-                =>
-                $request->gender,
+
+                'gender' =>
+
+                    $request->gender,
 
 
-                'beneficiary_type'
-                =>
-                $request->beneficiary_type,
 
-                 'child_name' => $request->child_name,
+                'beneficiary_type' =>
 
-    'child_birth_date' => $request->child_birth_date,
+                    $request->beneficiary_type,
+
+
+
+
+
+
+                /*
+                | Data Anak
+                */
+
+
+                'child_name' =>
+
+                    $request->child_name,
+
+
+
+                'child_nik' =>
+
+                    $request->child_nik,
+
+
+
+                'child_gender' =>
+
+                    $request->child_gender,
+
+
+
+                'child_birth_date' =>
+
+                    $request->child_birth_date,
+
+
 
 
             ]);
-
 
         }
 
 
 
+
+
+
+
         return response()->json([
 
-            'message'
-            =>
-            'Profile berhasil diperbarui',
 
-            'user'
-            =>
-            $user->load('profile'),
+            'message' =>
+
+                'Profile berhasil diperbarui',
+
+
+
+            'user' =>
+
+                $user->load('profile'),
+
+
 
         ]);
 
@@ -119,17 +281,30 @@ class ProfileController extends Controller
 
 
 
+
+
+
+
+
     public function uploadPhoto(Request $request)
     {
 
 
+
         $request->validate([
 
-            'photo'
-            =>
-            'required|image|max:2048',
+
+            'photo' =>
+
+                'required|image|max:2048',
+
+
 
         ]);
+
+
+
+
 
 
 
@@ -137,33 +312,62 @@ class ProfileController extends Controller
 
 
 
+
+
+
         $path =
-        $request->file('photo')
+
+            $request
+
+            ->file('photo')
+
             ->store(
+
                 'profile',
+
                 'public'
+
             );
 
 
 
 
-        if ($user->profile) {
 
 
 
-            if (
+
+
+        if($user->profile){
+
+
+
+
+
+            if(
+
                 $user->profile->photo
+
                 &&
-                Storage::disk('public')
-                ->exists(
-                    $user->profile->photo
-                )
-            ) {
 
                 Storage::disk('public')
+
+                ->exists(
+
+                    $user->profile->photo
+
+                )
+
+            ){
+
+
+                Storage::disk('public')
+
                     ->delete(
+
                         $user->profile->photo
+
                     );
+
 
             }
 
@@ -171,13 +375,20 @@ class ProfileController extends Controller
 
 
 
+
+
             $user->profile->update([
 
-                'photo'
-                =>
-                $path,
+
+
+                'photo' =>
+
+                    $path,
+
+
 
             ]);
+
 
 
         }
@@ -185,15 +396,24 @@ class ProfileController extends Controller
 
 
 
+
+
+
+
         return response()->json([
 
-            'message'
-            =>
-            'Foto berhasil diperbarui',
 
-            'photo'
-            =>
-            $path,
+            'message' =>
+
+                'Foto berhasil diperbarui',
+
+
+
+            'photo' =>
+
+                $path,
+
+
 
         ]);
 
