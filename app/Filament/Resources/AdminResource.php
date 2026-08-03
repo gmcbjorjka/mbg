@@ -4,29 +4,44 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\AdminResource\Pages;
 use App\Models\User;
+
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
+
 use Filament\Resources\Resource;
+
 use Filament\Tables;
 use Filament\Tables\Table;
+
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+
+
 
 class AdminResource extends Resource
 {
+
+
     protected static ?string $model = User::class;
+
+
 
 
     protected static ?string $navigationIcon =
         'heroicon-o-user-group';
 
 
+
+
     protected static ?string $navigationLabel =
         'Manajemen Admin';
+
+
 
 
     protected static ?string $navigationGroup =
@@ -35,14 +50,53 @@ class AdminResource extends Resource
 
 
 
-    /**
-     * Hanya ambil akun admin
-     */
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | HANYA SUPER ADMIN
+    |--------------------------------------------------------------------------
+    */
+
+
+    public static function canAccess(): bool
+    {
+
+        return Auth::user()?->role === 'super_admin';
+
+    }
+
+
+
+
+
+
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | QUERY HANYA ADMIN
+    |--------------------------------------------------------------------------
+    */
+
+
     public static function getEloquentQuery(): Builder
     {
+
         return parent::getEloquentQuery()
-            ->where('role', 'admin');
+
+            ->where(
+                'role',
+                'admin'
+            );
+
     }
+
+
+
+
 
 
 
@@ -50,18 +104,25 @@ class AdminResource extends Resource
 
     public static function form(Form $form): Form
     {
+
         return $form
+
             ->schema([
+
 
 
                 Section::make('Data Admin')
 
+
                     ->schema([
+
 
 
                         Grid::make(2)
 
                             ->schema([
+
+
 
 
 
@@ -74,6 +135,10 @@ class AdminResource extends Resource
 
 
 
+
+
+
+
                                 TextInput::make('email')
 
                                     ->label('Email')
@@ -82,7 +147,14 @@ class AdminResource extends Resource
 
                                     ->required()
 
-                                    ->unique(ignoreRecord: true),
+                                    ->unique(
+                                        ignoreRecord:true
+                                    ),
+
+
+
+
+
 
 
 
@@ -95,7 +167,15 @@ class AdminResource extends Resource
 
                                     ->required()
 
-                                    ->unique(ignoreRecord: true),
+                                    ->unique(
+                                        ignoreRecord:true
+                                    ),
+
+
+
+
+
+
 
 
 
@@ -106,15 +186,23 @@ class AdminResource extends Resource
 
                                     ->options([
 
-                                        'admin' =>
-                                            'Admin',
+                                        'admin'
+                                            =>
+                                        'Admin',
 
                                     ])
 
                                     ->default('admin')
 
                                     ->disabled()
+
                                     ->dehydrated(),
+
+
+
+
+
+
 
 
 
@@ -125,17 +213,29 @@ class AdminResource extends Resource
 
                                     ->options([
 
+
                                         'active'
-                                            => 'Aktif',
+                                            =>
+                                        'Aktif',
+
+
 
                                         'inactive'
-                                            => 'Non Aktif',
+                                            =>
+                                        'Non Aktif',
+
 
                                     ])
 
                                     ->default('active')
 
                                     ->required(),
+
+
+
+
+
+
 
 
 
@@ -147,29 +247,42 @@ class AdminResource extends Resource
                                     ->password()
 
                                     ->required(
-                                        fn (string $operation) =>
+                                        fn(string $operation)=>
                                         $operation === 'create'
                                     )
 
+
                                     ->hidden(
-                                        fn (string $operation) =>
+                                        fn(string $operation)=>
                                         $operation === 'edit'
                                     )
 
+
                                     ->dehydrateStateUsing(
-                                        fn ($state) =>
+                                        fn($state)=>
                                         Hash::make($state)
                                     ),
+
+
+
 
 
                             ]),
 
 
+
+
                     ]),
 
 
+
             ]);
+
     }
+
+
+
+
 
 
 
@@ -177,10 +290,13 @@ class AdminResource extends Resource
 
     public static function table(Table $table): Table
     {
+
         return $table
 
 
             ->columns([
+
+
 
 
 
@@ -189,6 +305,10 @@ class AdminResource extends Resource
                     ->label('Nama Admin')
 
                     ->searchable(),
+
+
+
+
 
 
 
@@ -202,9 +322,18 @@ class AdminResource extends Resource
 
 
 
+
+
+
+
                 Tables\Columns\TextColumn::make('phone')
 
                     ->label('Nomor HP'),
+
+
+
+
+
 
 
 
@@ -218,15 +347,26 @@ class AdminResource extends Resource
 
 
 
+
+
+
+
+
                 Tables\Columns\TextColumn::make('created_at')
 
                     ->label('Dibuat')
 
-                    ->dateTime('d-m-Y H:i'),
+                    ->dateTime(
+                        'd-m-Y H:i'
+                    ),
+
+
 
 
 
             ])
+
+
 
 
 
@@ -240,7 +380,10 @@ class AdminResource extends Resource
 
 
 
+
+
             ->bulkActions([
+
 
 
                 Tables\Actions\BulkActionGroup::make([
@@ -253,7 +396,12 @@ class AdminResource extends Resource
 
 
             ]);
+
     }
+
+
+
+
 
 
 
@@ -261,8 +409,14 @@ class AdminResource extends Resource
 
     public static function getRelations(): array
     {
+
         return [];
+
     }
+
+
+
+
 
 
 
@@ -270,24 +424,33 @@ class AdminResource extends Resource
 
     public static function getPages(): array
     {
+
         return [
 
 
             'index' =>
+
                 Pages\ListAdmins::route('/'),
 
 
 
+
+
             'create' =>
+
                 Pages\CreateAdmin::route('/create'),
 
 
 
+
+
             'edit' =>
+
                 Pages\EditAdmin::route('/{record}/edit'),
 
 
         ];
+
     }
 
 
