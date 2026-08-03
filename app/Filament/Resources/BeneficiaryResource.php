@@ -60,106 +60,180 @@ protected static ?string $pluralModelLabel = 'Daftar Penerima Manfaat';
 
 
 
-    public static function table(Table $table): Table
-    {
+  public static function table(Table $table): Table
+{
 
-        return $table
+    return $table
 
-            ->columns([
+        ->columns([
 
 
 
-                Tables\Columns\TextColumn::make('name')
+            Tables\Columns\TextColumn::make('name')
 
-                    ->label('Nama Penerima')
+                ->label('Nama Penerima')
 
-                    ->searchable()
+                ->searchable()
 
-                    ->sortable(),
+                ->sortable(),
 
 
 
 
 
-                Tables\Columns\TextColumn::make('email')
 
-                    ->label('Email')
+            Tables\Columns\TextColumn::make('email')
 
-                    ->searchable(),
+                ->label('Email')
 
+                ->searchable(),
 
 
 
 
-                Tables\Columns\TextColumn::make('phone')
 
-                    ->label('Nomor HP')
 
-                    ->default('-'),
+            Tables\Columns\TextColumn::make('phone')
 
+                ->label('Nomor HP')
 
+                ->default('-'),
 
 
 
-                Tables\Columns\BadgeColumn::make('role')
 
-                    ->label('Status')
 
-                    ->formatStateUsing(function () {
 
-                        return 'Penerima MBG';
+            Tables\Columns\TextColumn::make('profile.beneficiary_type')
 
-                    })
+                ->label('Jenis Penerima')
 
-                    ->color('success'),
+                ->badge()
 
+                ->formatStateUsing(fn ($state) => match($state) {
 
 
+                    'pregnant'
+                        => 'Ibu Hamil',
 
 
-                Tables\Columns\TextColumn::make('created_at')
 
-                    ->label('Tanggal Registrasi')
+                    'toddler_parent'
+                        => 'Ibu Balita',
 
-                    ->date('d M Y')
 
-                    ->sortable(),
 
+                    default
+                        => '-',
 
-            ])
 
+                })
 
+                ->color(fn ($state) => match($state) {
 
 
+                    'pregnant'
+                        => 'warning',
 
-            ->filters([
 
-                //
 
-            ])
+                    'toddler_parent'
+                        => 'success',
 
 
 
+                    default
+                        => 'gray',
 
 
-            ->actions([
+                }),
 
-                // hanya lihat data
 
-            ])
 
 
 
 
 
-            ->bulkActions([
+            Tables\Columns\BadgeColumn::make('role')
 
-                // tidak ada hapus
+                ->label('Status')
 
-            ]);
+                ->formatStateUsing(function () {
 
-    }
 
+                    return 'Penerima MBG';
+
+
+                })
+
+                ->color('success'),
+
+
+
+
+
+
+            Tables\Columns\TextColumn::make('created_at')
+
+                ->label('Tanggal Registrasi')
+
+                ->date('d M Y')
+
+                ->sortable(),
+
+
+
+
+        ])
+
+
+
+
+
+        ->filters([
+
+            Tables\Filters\SelectFilter::make('profile.beneficiary_type')
+
+                ->label('Jenis Penerima')
+
+                ->options([
+
+
+                    'pregnant'
+                        => 'Ibu Hamil',
+
+
+
+                    'toddler_parent'
+                        => 'Ibu Balita',
+
+
+                ]),
+
+
+        ])
+
+
+
+
+
+        ->actions([
+
+            // hanya lihat data
+
+        ])
+
+
+
+
+
+        ->bulkActions([
+
+            // tidak ada hapus
+
+        ]);
+
+}
 
 
 

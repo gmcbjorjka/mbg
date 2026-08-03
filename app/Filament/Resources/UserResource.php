@@ -4,24 +4,33 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
+
 use Filament\Forms\Form;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\DatePicker;
+
 use Filament\Resources\Resource;
+
 use Filament\Tables;
 use Filament\Tables\Table;
+
 use Illuminate\Database\Eloquent\Builder;
+
 use Filament\Infolists\Infolist;
 use Filament\Infolists\Components\Section as InfoSection;
 use Filament\Infolists\Components\Grid as InfoGrid;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\ImageEntry;
 
+
+
 class UserResource extends Resource
 {
+
+
     protected static ?string $model = User::class;
 
 
@@ -43,14 +52,19 @@ class UserResource extends Resource
 
 
 
+
     public static function getEloquentQuery(): Builder
     {
+
         return parent::getEloquentQuery()
 
-            ->where('role', 'user')
+            ->where('role','user')
 
             ->with('profile');
+
     }
+
+
 
 
 
@@ -59,8 +73,11 @@ class UserResource extends Resource
 
     public static function canCreate(): bool
     {
+
         return false;
+
     }
+
 
 
 
@@ -70,235 +87,291 @@ class UserResource extends Resource
 
 
     public static function form(Form $form): Form
-    {
-        return $form
+{
+    return $form
+        ->schema([
 
-            ->schema([
 
+            Section::make('Informasi User')
 
+                ->schema([
 
+                    Grid::make(2)
 
+                        ->schema([
 
-                Section::make('Informasi User')
 
-                    ->schema([
+                            TextInput::make('name')
 
+                                ->label('Nama Ibu')
 
+                                ->required(),
 
-                        Grid::make(2)
 
-                            ->schema([
 
+                            TextInput::make('email')
 
+                                ->label('Email')
 
+                                ->disabled()
+                                ->dehydrated(false),
 
-                                TextInput::make('name')
 
-                                    ->label('Nama Lengkap')
 
-                                    ->required(),
+                            TextInput::make('phone')
 
+                                ->label('Nomor HP')
 
+                                ->disabled()
+                                ->dehydrated(false),
 
 
 
-                                TextInput::make('email')
+                            Select::make('status')
 
-                                    ->label('Email')
+                                ->label('Status Akun')
 
-                                    ->disabled()
+                                ->options([
 
-                                    ->dehydrated(false),
+                                    'active'
+                                        => 'Aktif',
 
+                                    'inactive'
+                                        => 'Menunggu Aktivasi',
 
+                                ])
 
+                                ->required(),
 
+                        ]),
 
-                                TextInput::make('phone')
 
-                                    ->label('Nomor HP')
+                ]),
 
-                                    ->disabled()
 
-                                    ->dehydrated(false),
 
 
 
+            Section::make('Data Ibu')
 
+                ->relationship('profile')
 
-                                Select::make('status')
+                ->schema([
 
-                                    ->label('Status Akun')
 
-                                    ->options([
 
-                                        'active' => 'Aktif',
+                    TextInput::make('nik')
 
-                                        'inactive' => 'Menunggu Aktivasi',
+                        ->label('NIK Ibu')
 
-                                    ])
+                        ->disabled()
+                        ->dehydrated(false),
 
-                                    ->required(),
 
 
 
-                            ]),
 
+                    Select::make('gender')
 
+                        ->label('Jenis Kelamin Ibu')
 
-                    ]),
+                        ->options([
 
+                            'female'
+                                => 'Perempuan',
 
+                        ])
 
+                        ->default('female'),
 
 
 
 
 
+                    DatePicker::make('birth_date')
 
+                        ->label('Tanggal Lahir Ibu')
 
-                Section::make('Data Profile')
+                        ->displayFormat('d-m-Y'),
 
-                    ->relationship('profile')
 
-                    ->schema([
 
 
 
+                    Select::make('beneficiary_type')
 
+                        ->label('Jenis Penerima')
 
-                        TextInput::make('nik')
+                        ->options([
 
-                            ->label('NIK')
 
-                            ->disabled(),
+                            'pregnant'
+                                => 'Ibu Hamil',
 
 
 
+                            'toddler_parent'
+                                => 'Ibu Balita',
 
 
-                        Select::make('gender')
+                        ])
 
-                            ->label('Jenis Kelamin')
+                        ->live()
 
-                            ->options([
+                        ->afterStateUpdated(function(
+                            $state,
+                            callable $set
+                        ){
 
-                                'male' => 'Laki-laki',
 
-                                'female' => 'Perempuan',
+                            if($state === 'pregnant'){
 
-                            ]),
 
+                                // hapus data anak
 
+                                $set('child_name', null);
 
+                                $set('child_nik', null);
 
+                                $set('child_gender', null);
 
 
-                        DatePicker::make('birth_date')
+                            }
 
-                            ->label('Tanggal Lahir')
 
-                            ->displayFormat('d-m-Y'),
+                        })
 
+                        ->required(),
 
 
 
 
 
-                        Select::make('beneficiary_type')
 
-                            ->label('Jenis Penerima')
+                    /*
+                    |--------------------------------------------------------------------------
+                    | TANGGAL DINAMIS
+                    |--------------------------------------------------------------------------
+                    */
 
-                            ->options([
 
-                                'pregnant' => 'Ibu Hamil',
+                    DatePicker::make('child_birth_date')
 
-                                'toddler_parent' => 'Orang Tua Balita',
+                        ->label(fn($get) =>
 
-                            ])
+                            $get('beneficiary_type')
+                            ===
+                            'pregnant'
 
-                            ->live(),
+                                ? 'HPHT / Awal Kehamilan'
 
+                                : 'Tanggal Lahir Anak'
 
+                        )
 
+                        ->displayFormat('d-m-Y')
 
+                        ->required(),
 
 
 
 
-                        TextInput::make('child_name')
 
-                            ->label('Nama Anak')
 
-                            ->visible(
-                                fn ($get) =>
 
-                                $get('beneficiary_type') === 'toddler_parent'
-                            ),
 
+                    /*
+                    |--------------------------------------------------------------------------
+                    | DATA ANAK
+                    |--------------------------------------------------------------------------
+                    */
 
 
+                    TextInput::make('child_name')
 
+                        ->label('Nama Anak')
 
+                        ->visible(fn($get)=>
 
+                            $get('beneficiary_type')
+                            ===
+                            'toddler_parent'
 
+                        ),
 
-                        DatePicker::make('child_birth_date')
 
-                            ->label(
-                                fn ($get) =>
 
-                                $get('beneficiary_type') === 'pregnant'
 
-                                    ? 'Tanggal Awal Kehamilan (HPHT)'
 
-                                    : 'Tanggal Lahir Anak'
-                            )
 
-                            ->displayFormat('d-m-Y'),
+                    TextInput::make('child_nik')
 
+                        ->label('NIK Anak')
 
+                        ->visible(fn($get)=>
 
+                            $get('beneficiary_type')
+                            ===
+                            'toddler_parent'
 
+                        ),
 
 
 
 
-                        TextInput::make('address')
 
-                            ->label('Alamat')
 
-                            ->columnSpanFull(),
+                    Select::make('child_gender')
 
+                        ->label('Jenis Kelamin Anak')
 
+                        ->options([
 
 
+                            'male'
+                                => 'Laki-laki',
 
-                    ])
 
-                    ->columns(2),
+                            'female'
+                                => 'Perempuan',
 
 
+                        ])
 
+                        ->visible(fn($get)=>
 
+                            $get('beneficiary_type')
+                            ===
+                            'toddler_parent'
 
-            ]);
-    }
+                        ),
 
 
 
 
 
 
+                    TextInput::make('address')
 
+                        ->label('Alamat Ibu')
 
+                        ->columnSpanFull(),
 
-    public static function table(Table $table): Table
+
+
+                ])
+
+                ->columns(2),
+
+
+
+        ]);
+}
+
+        public static function table(Table $table): Table
     {
 
         return $table
-
-
 
             ->columns([
 
@@ -306,12 +379,15 @@ class UserResource extends Resource
 
 
 
-
                 Tables\Columns\TextColumn::make('name')
 
-                    ->label('Nama User')
+                    ->label('Nama Ibu')
 
-                    ->searchable(),
+                    ->searchable()
+
+                    ->sortable(),
+
+
 
 
 
@@ -327,26 +403,63 @@ class UserResource extends Resource
 
 
 
+
+
                 Tables\Columns\TextColumn::make('profile.beneficiary_type')
 
                     ->label('Jenis Penerima')
 
-                    ->formatStateUsing(fn ($state) => match ($state) {
+                    ->badge()
+
+                    ->formatStateUsing(fn($state)=>match($state){
+
 
 
                         'pregnant'
                             => 'Ibu Hamil',
 
 
+
+
                         'toddler_parent'
-                            => 'Orang Tua Balita',
+                            => 'Ibu Balita',
+
+
 
 
                         default
-                        => '-',
+                            => '-',
+
 
 
                     }),
+
+
+
+
+
+
+
+                Tables\Columns\TextColumn::make('profile.child_name')
+
+                    ->label('Nama Anak')
+
+                    ->placeholder('-')
+
+                    ->toggleable(),
+
+
+
+
+
+
+
+                Tables\Columns\TextColumn::make('profile.age_information')
+
+                    ->label('Usia Anak / Kandungan')
+
+                    ->placeholder('-'),
+
 
 
 
@@ -357,7 +470,29 @@ class UserResource extends Resource
 
                     ->label('Status')
 
-                    ->badge(),
+                    ->badge()
+
+                    ->color(fn($state)=>match($state){
+
+
+                        'active'
+                            => 'success',
+
+
+
+                        'inactive'
+                            => 'warning',
+
+
+
+                        default
+                            => 'gray',
+
+
+
+                    }),
+
+
 
 
 
@@ -367,7 +502,9 @@ class UserResource extends Resource
 
                     ->label('Tanggal Daftar')
 
-                    ->dateTime('d-m-Y'),
+                    ->dateTime('d-m-Y')
+
+                    ->sortable(),
 
 
 
@@ -383,20 +520,63 @@ class UserResource extends Resource
 
 
 
+
+
                 Tables\Filters\SelectFilter::make('status')
+
+                    ->label('Status Akun')
 
                     ->options([
 
-                        'active' => 'Aktif',
 
-                        'inactive' => 'Menunggu Aktivasi',
+
+                        'active'
+                            => 'Aktif',
+
+
+
+                        'inactive'
+                            => 'Menunggu Aktivasi',
+
+
 
                     ]),
 
 
 
 
+
+
+
+                Tables\Filters\SelectFilter::make('profile.beneficiary_type')
+
+                    ->label('Jenis Penerima')
+
+                    ->options([
+
+
+
+                        'pregnant'
+                            => 'Ibu Hamil',
+
+
+
+
+                        'toddler_parent'
+                            => 'Ibu Balita',
+
+
+
+
+                    ]),
+
+
+
+
+
+
             ])
+
 
 
 
@@ -418,10 +598,27 @@ class UserResource extends Resource
 
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
     public static function getRelations(): array
     {
+
         return [];
+
     }
+
+
+
 
 
 
@@ -430,11 +627,14 @@ class UserResource extends Resource
 
     public static function getPages(): array
     {
+
         return [
+
 
 
             'index'
                 => Pages\ListUsers::route('/'),
+
 
 
 
@@ -443,23 +643,18 @@ class UserResource extends Resource
 
 
 
+
             'view'
                 => Pages\ViewUser::route('/{record}'),
 
 
 
+
         ];
+
     }
 
-
-
-
-
-
-
-
-
-    public static function infolist(Infolist $infolist): Infolist
+        public static function infolist(Infolist $infolist): Infolist
     {
 
         return $infolist
@@ -468,6 +663,13 @@ class UserResource extends Resource
 
 
 
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | INFORMASI AKUN
+                |--------------------------------------------------------------------------
+                */
 
 
                 InfoSection::make('Informasi Akun')
@@ -485,7 +687,7 @@ class UserResource extends Resource
 
                                 TextEntry::make('name')
 
-                                    ->label('Nama Lengkap'),
+                                    ->label('Nama Ibu'),
 
 
 
@@ -493,7 +695,9 @@ class UserResource extends Resource
 
                                 TextEntry::make('email')
 
-                                    ->label('Email'),
+                                    ->label('Email')
+
+                                    ->placeholder('-'),
 
 
 
@@ -501,7 +705,9 @@ class UserResource extends Resource
 
                                 TextEntry::make('phone')
 
-                                    ->label('Nomor HP'),
+                                    ->label('Nomor HP')
+
+                                    ->placeholder('-'),
 
 
 
@@ -509,7 +715,7 @@ class UserResource extends Resource
 
                                 TextEntry::make('status')
 
-                                    ->label('Status')
+                                    ->label('Status Akun')
 
                                     ->badge(),
 
@@ -532,7 +738,17 @@ class UserResource extends Resource
 
 
 
-                InfoSection::make('Profile User')
+
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | DATA IBU
+                |--------------------------------------------------------------------------
+                */
+
+
+                InfoSection::make('Data Ibu')
 
                     ->schema([
 
@@ -540,17 +756,21 @@ class UserResource extends Resource
 
 
 
-
                         ImageEntry::make('profile.photo')
 
-                            ->label('Foto Profile')
+                            ->label('Foto Ibu')
 
                             ->disk('public')
 
-                            ->height(200)
+                            ->height(180)
 
-                            ->circular(),
+                            ->circular()
 
+                            ->visible(fn($record)=>
+
+                                filled($record->profile?->photo)
+
+                            ),
 
 
 
@@ -569,7 +789,7 @@ class UserResource extends Resource
 
                                 TextEntry::make('profile.nik')
 
-                                    ->label('NIK')
+                                    ->label('NIK Ibu')
 
                                     ->placeholder('-'),
 
@@ -579,12 +799,11 @@ class UserResource extends Resource
 
 
 
-
                                 TextEntry::make('profile.gender')
 
-                                    ->label('Jenis Kelamin')
+                                    ->label('Jenis Kelamin Ibu')
 
-                                    ->formatStateUsing(fn ($state) => match ($state) {
+                                    ->formatStateUsing(fn($state)=>match($state){
 
 
 
@@ -599,12 +818,13 @@ class UserResource extends Resource
 
 
                                         default
-                                        => '-',
+                                            => '-',
 
 
 
-                                    }),
+                                    })
 
+                                    ->placeholder('-'),
 
 
 
@@ -614,12 +834,11 @@ class UserResource extends Resource
 
                                 TextEntry::make('profile.birth_date')
 
-                                    ->label('Tanggal Lahir')
+                                    ->label('Tanggal Lahir Ibu')
 
-                                    ->date('d F Y')
+                                    ->date('d-m-Y')
 
                                     ->placeholder('-'),
-
 
 
 
@@ -631,7 +850,7 @@ class UserResource extends Resource
 
                                     ->label('Jenis Penerima')
 
-                                    ->formatStateUsing(fn ($state) => match ($state) {
+                                    ->formatStateUsing(fn($state)=>match($state){
 
 
 
@@ -640,13 +859,15 @@ class UserResource extends Resource
 
 
 
+
                                         'toddler_parent'
-                                            => 'Orang Tua Balita',
+                                            => 'Ibu Balita',
+
 
 
 
                                         default
-                                        => '-',
+                                            => '-',
 
 
 
@@ -658,88 +879,9 @@ class UserResource extends Resource
 
 
 
-
-
-
-                                TextEntry::make('profile.child_name')
-
-                                    ->label('Nama Anak')
-
-                                    ->placeholder('-')
-
-                                    ->visible(
-                                        fn ($record) =>
-
-
-                                        $record->profile?->beneficiary_type === 'toddler_parent'
-                                    ),
-
-
-
-
-
-
-
-
-
-
-                                TextEntry::make('profile.child_birth_date')
-
-                                    ->label(
-                                        fn ($record) =>
-
-
-                                        $record->profile?->beneficiary_type === 'pregnant'
-
-
-                                            ? 'Tanggal Awal Kehamilan (HPHT)'
-
-
-                                            : 'Tanggal Lahir Anak'
-                                    )
-
-                                    ->date('d F Y')
-
-                                    ->placeholder('-'),
-
-
-
-
-
-
-
-
-
-
-                                TextEntry::make('profile.age_information')
-
-                                    ->label(
-                                        fn ($record) =>
-
-
-                                        $record->profile?->beneficiary_type === 'pregnant'
-
-
-                                            ? 'Usia Kandungan'
-
-
-                                            : 'Usia Anak'
-                                    )
-
-                                    ->placeholder('-'),
-
-
-
-
-
-
-
-
-
-
                                 TextEntry::make('profile.address')
 
-                                    ->label('Alamat')
+                                    ->label('Alamat Ibu')
 
                                     ->columnSpanFull()
 
@@ -765,6 +907,228 @@ class UserResource extends Resource
 
 
 
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | DATA ANAK
+                |--------------------------------------------------------------------------
+                */
+
+
+                InfoSection::make('Data Anak')
+
+                    ->visible(fn($record)=>
+
+
+                        $record?->profile?->beneficiary_type
+                        ===
+                        'toddler_parent'
+
+
+                    )
+
+                    ->schema([
+
+
+
+
+
+                        InfoGrid::make(2)
+
+                            ->schema([
+
+
+
+
+
+
+                                TextEntry::make('profile.child_name')
+
+                                    ->label('Nama Anak')
+
+                                    ->placeholder('-'),
+
+
+
+
+
+
+
+
+                                TextEntry::make('profile.child_nik')
+
+                                    ->label('NIK Anak')
+
+                                    ->placeholder('-'),
+
+
+
+
+
+
+
+
+                                TextEntry::make('profile.child_gender')
+
+                                    ->label('Jenis Kelamin Anak')
+
+                                    ->formatStateUsing(fn($state)=>match($state){
+
+
+
+                                        'male'
+                                            => 'Laki-laki',
+
+
+
+                                        'female'
+                                            => 'Perempuan',
+
+
+
+                                        default
+                                            => '-',
+
+
+
+                                    })
+
+                                    ->placeholder('-'),
+
+
+
+
+
+
+
+                                TextEntry::make('profile.child_birth_date')
+
+                                    ->label('Tanggal Lahir Anak')
+
+                                    ->date('d-m-Y')
+
+                                    ->placeholder('-'),
+
+
+
+
+
+
+
+                                TextEntry::make('profile.age_information')
+
+                                    ->label('Usia Anak')
+
+                                    ->placeholder('-'),
+
+
+
+
+
+
+                            ]),
+
+
+
+
+                    ]),
+
+
+
+
+
+
+
+
+
+
+
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | DATA KEHAMILAN
+                |--------------------------------------------------------------------------
+                */
+
+
+                InfoSection::make('Data Kehamilan')
+
+                    ->visible(fn($record)=>
+
+
+                        $record?->profile?->beneficiary_type
+                        ===
+                        'pregnant'
+
+
+                    )
+
+                    ->schema([
+
+
+
+
+
+                        InfoGrid::make(2)
+
+                            ->schema([
+
+
+
+
+
+                                TextEntry::make('profile.child_birth_date')
+
+                                    ->label('HPHT / Awal Kehamilan')
+
+                                    ->date('d-m-Y')
+
+                                    ->placeholder('-'),
+
+
+
+
+
+
+                                TextEntry::make('profile.age_information')
+
+                                    ->label('Usia Kandungan')
+
+                                    ->placeholder('-'),
+
+
+
+
+
+
+                            ]),
+
+
+
+
+                    ]),
+
+
+
+
+
+
+
+
+
+
+
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | INFORMASI SISTEM
+                |--------------------------------------------------------------------------
+                */
+
+
                 InfoSection::make('Informasi Sistem')
 
                     ->collapsed()
@@ -774,10 +1138,10 @@ class UserResource extends Resource
 
 
 
+
                         InfoGrid::make(2)
 
                             ->schema([
-
 
 
 
@@ -803,6 +1167,7 @@ class UserResource extends Resource
 
 
 
+
                             ]),
 
 
@@ -815,13 +1180,9 @@ class UserResource extends Resource
 
 
 
-
             ]);
 
     }
-
-
-
 
 
 }

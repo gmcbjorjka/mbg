@@ -2,10 +2,23 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Sppg extends Model
 {
-    use HasFactory;
+    protected $fillable = [
+
+        'name',
+
+        'address',
+
+        'posyandu_name',
+
+    ];
+
+
+    public static function current()
+    {
+        return self::first();
+    }
 }
