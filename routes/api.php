@@ -45,6 +45,24 @@ Route::prefix('auth')
 
 
         Route::post(
+            '/register/send-otp',
+            [
+                AuthController::class,
+                'sendRegisterOtp'
+            ]
+        )
+        ->middleware('throttle:3,10');
+
+        Route::post(
+            '/register/verify-otp',
+            [
+                AuthController::class,
+                'verifyRegisterOtp'
+            ]
+        )
+        ->middleware('throttle:5,1');
+
+        Route::post(
             '/register',
             [
                 AuthController::class,
