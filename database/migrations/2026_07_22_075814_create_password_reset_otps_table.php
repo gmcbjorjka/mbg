@@ -10,25 +10,27 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-        Schema::create('password_reset_otps', function (Blueprint $table) {
+        if (!Schema::hasTable('password_reset_otps')) {
+            Schema::create('password_reset_otps', function (Blueprint $table) {
 
-            $table->id();
+                $table->id();
 
-            $table->string('contact');
+                $table->string('contact');
 
-            $table->string('otp');
+                $table->string('otp');
 
-            $table->string('reset_token')
-                  ->nullable();
+                $table->string('reset_token')
+                      ->nullable();
 
-            $table->timestamp('expired_at');
+                $table->timestamp('expired_at');
 
-            $table->boolean('verified')
-                  ->default(false);
+                $table->boolean('verified')
+                      ->default(false);
 
-            $table->timestamps();
+                $table->timestamps();
 
-        });
+            });
+        }
     }
 
     /**

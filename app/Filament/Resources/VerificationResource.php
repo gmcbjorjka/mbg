@@ -16,15 +16,15 @@ class VerificationResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-shield-check';
 
-    protected static ?string $navigationLabel = 'Verifikasi Penerimaan MBG';
+    protected static ?string $navigationLabel = 'Data Penerimaan MBG';
 
     protected static ?string $navigationGroup = 'Operasional';
 
     protected static ?int $navigationSort = 4;
 
-    protected static ?string $modelLabel = 'Verifikasi Penerimaan MBG';
+    protected static ?string $modelLabel = 'Data Penerimaan MBG';
 
-    protected static ?string $pluralModelLabel = 'Daftar Verifikasi Penerimaan';
+    protected static ?string $pluralModelLabel = 'Daftar Data Penerimaan';
 
     public static function table(Table $table): Table
     {

@@ -69,8 +69,10 @@ protected static ?string $pluralModelLabel = 'Daftar Artikel';
                 ->rows(3)
                 ->columnSpanFull(),
 
-            RichEditor::make('content')
-                ->label('Isi Artikel')
+            FileUpload::make('content')
+                ->label('File PDF Artikel')
+                ->acceptedFileTypes(['application/pdf'])
+                ->directory('articles')
                 ->required()
                 ->columnSpanFull(),
 
