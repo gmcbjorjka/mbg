@@ -17,6 +17,7 @@ use Filament\Tables\Table;
 use App\Models\MbgMenu;
 use App\Models\Distribution;
 use Filament\Notifications\Notification;
+use Illuminate\Database\Eloquent\Builder;
 
 
 class ScheduleResource extends Resource
@@ -397,31 +398,20 @@ protected static ?string $pluralModelLabel = 'Daftar Jadwal';
 
 
                 Tables\Columns\TextColumn::make('start_time')
-
                     ->label('Jam')
-
                     ->formatStateUsing(function ($record) {
+                        if (! $record->start_time && ! $record->end_time) {
+                            return '-';
+                        }
 
+                        $start = $record->start_time ? substr($record->start_time, 0, 5) : '';
+                        $end = $record->end_time ? substr($record->end_time, 0, 5) : '';
 
-                        return substr(
-                            $record->start_time,
-                            0,
-                            5
-                        )
+                        if ($start && $end) {
+                            return "{$start} - {$end}";
+                        }
 
-                        .
-
-                        ' - '
-
-                        .
-
-                        substr(
-                            $record->end_time,
-                            0,
-                            5
-                        );
-
-
+                        return $start ?: $end;
                     }),
 
 
@@ -504,66 +494,46 @@ protected static ?string $pluralModelLabel = 'Daftar Jadwal';
 
 
     Tables\Actions\Action::make('menu')
-
         ->label('Menu')
-
         ->icon('heroicon-o-cake')
-
         ->color('warning')
-
         ->visible(fn ($record) => $record->type === 'mbg')
-
         ->url(function ($record) {
+            if (! $record->menu) {
+                return null;
+            }
 
             return route(
                 'filament.admin.resources.menus.edit',
                 [
-                    'record' => $record->menu?->id
+                    'record' => $record->menu->id,
                 ]
             );
-
         })
-
         ->disabled(fn ($record) => !$record->menu),
 
-
-
-
-
-
     Tables\Actions\Action::make('distribusi')
-
         ->label('Distribusi')
-
         ->icon('heroicon-o-truck')
-
         ->color('success')
-
         ->visible(fn ($record) => $record->type === 'mbg')
-
         ->url(function ($record) {
+            if (! $record->distribution) {
+                return null;
+            }
 
             return route(
                 'filament.admin.resources.distributions.edit',
                 [
-                    'record' => $record->distribution?->id
+                    'record' => $record->distribution->id,
                 ]
             );
-
         })
-
         ->disabled(fn ($record) => !$record->distribution),
-
-
-
-
 
     Tables\Actions\EditAction::make(),
 
-
-
     Tables\Actions\DeleteAction::make(),
-
 ])
 
 
@@ -600,6 +570,12 @@ protected static ?string $pluralModelLabel = 'Daftar Jadwal';
 
 
 
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with(['menu', 'distribution']);
+    }
 
     public static function getPages(): array
     {
